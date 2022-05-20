@@ -1,16 +1,15 @@
 // Generate Ec2b seed and corresponding xorpad (key)
 // Heavily based on work done at https://github.com/khang06/genshinblkstuff
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <assert.h>
-#include <time.h>
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
+#include <cassert>
+#include <ctime>
 
 #include <random>
 
 #include "magic.h"
-#include "util.h"
 
 // These functions are not exported, so hackaround it
 extern "C" void oqs_mhy128_enc_c(const uint8_t *plaintext, const void *_schedule, uint8_t *ciphertext);
@@ -34,7 +33,7 @@ void key_scramble(uint8_t* key) {
 }
 
 // UnityPlayer:$19DA40
-void get_decrypt_vector(uint8_t* key, uint8_t* crypt, uint64_t crypt_size, uint8_t* output, uint64_t output_size) {
+void get_decrypt_vector(uint8_t* key, const uint8_t* crypt, uint64_t crypt_size, uint8_t* output, uint64_t output_size) {
     assert(output_size == 4096); // no support for other sizes here
 
     uint64_t val = 0xFFFFFFFFFFFFFFFF;
@@ -54,17 +53,17 @@ int main()
     uint8_t key[16];
     uint8_t data[2048];
 
-    srand(time(NULL));
-    for (uint64_t i = 0; i < sizeof(key); i++) {
-        key[i] = rand();
+    srand(time(nullptr));
+    for (unsigned char & i : key) {
+        i = rand();
     }
-    for (uint64_t i = 0; i < sizeof(data); i++) {
-        data[i] = rand();
+    for (unsigned char & i : data) {
+        i = rand();
     }
 
     // Write them to Ec2b file
     auto* ec2b = fopen("Ec2bSeed.bin", "wb");
-    if (ec2b != NULL) {
+    if (ec2b != nullptr) {
         fwrite("Ec2b", sizeof(uint32_t), 1, ec2b); // "Ec2b", non-terminated
         fwrite("\x10\0\0\0", sizeof(uint32_t), 1, ec2b); // 0x10, key length(?) or version
         fwrite(key, sizeof(key), 1, ec2b);
@@ -88,7 +87,7 @@ int main()
 
     // Write key file
     auto* vector = fopen("Ec2bKey.bin", "wb");
-    if (vector != NULL) {
+    if (vector != nullptr) {
         fwrite(xorpad, sizeof(xorpad), 1, vector);
         fclose(vector);
     } else {
