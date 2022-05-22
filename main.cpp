@@ -22,7 +22,7 @@ void key_scramble(uint8_t* key) {
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 uint64_t idx = (round << 8) + (i*16) + j;
-                round_keys[round * 16 + i] ^= aes_xorpad_table[idx] ^ stack_table[idx];
+                round_keys[round * 16 + i] ^= aes_xorpad_table[1][idx] ^ aes_xorpad_table[0][idx];
             }
         }
     }
@@ -42,9 +42,10 @@ void get_decrypt_vector(uint8_t* key, const uint8_t* crypt, uint64_t crypt_size,
     }
 
     auto* key_qword = (uint64_t*)key;
-    auto mt = std::mt19937_64(key_qword[1] ^ 0xceac3b5a867837ac ^ val ^ key_qword[0]);
-    for (uint64_t i = 0; i < output_size >> 3; i++)
+    auto mt = std::mt19937_64(key_qword[1] ^ 0xCEAC3B5A867837AC ^ val ^ key_qword[0]);
+    for (uint64_t i = 0; i < output_size >> 3; i++) {
         ((uint64_t*)output)[i] = mt();
+    }
 }
 
 int main()
@@ -78,7 +79,7 @@ int main()
     // Scramble key
     key_scramble(key);
     for (int i = 0; i < 16; i++) {
-        key[i] ^= key_xor_table[i];
+        key[i] ^= key_xorpad_table[i];
     }
 
     // Generate xorpad from scrambled key and data
