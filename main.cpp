@@ -23,7 +23,7 @@ void key_scramble(uint8_t* key) {
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 uint64_t idx = (round << 8) + (i*16) + j;
-                round_keys[round * 16 + i] ^= aes_xorpad_table[0][idx] ^ aes_xorpad_table[1][idx];
+                round_keys[round * 16 + i] ^= aes_xorpad_table[1][idx] ^ aes_xorpad_table[0][idx];
             }
         }
     }
